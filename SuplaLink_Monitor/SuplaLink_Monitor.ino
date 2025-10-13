@@ -1,4 +1,11 @@
 #include <Arduino.h>
+#include "config.h"
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <time.h>
 
 #if defined(__has_include)
   #if __has_include("secrets.h")
@@ -6,22 +13,11 @@
   #endif
 #endif
 
-#include "config.h"
-
-#include <WiFi.h>
-#include <HTTPClient.h>
-#include <ArduinoJson.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#include <WiFiUdp.h>
-#include <NTPClient.h>
-
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_ADDR 0x3C
 
-WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "pool.ntp.org");
+// NTP handled by ESP32 SNTP via configTzTime
 
 bool hasDisplay = false;
 
@@ -80,8 +76,9 @@ void setup() {
     Serial.println(F("WiFi connect timeout"));
   }
 
-  timeClient.begin();
-  timeClient.setTimeOffset(7200);  // UTC +2h (Poland)
+  // Set timezone using POSIX TZ string (configurable in TZ_STRING)
+  // Example CET with DST (last Sun of Mar/Oct): CET-1CEST,M3.5.0,M10.5.0/3
+  configTzTime(TZ_STRING, "pool.ntp.org", "time.nist.gov");
 
   if (hasDisplay) {
     Serial.println(F("OLED not found, running headless"));
@@ -97,8 +94,12 @@ void setup() {
 
 void loop() {
   if (WiFi.status() == WL_CONNECTED) {
-    timeClient.update();
-    Serial.println(timeClient.getFormattedTime());
+    struct tm timeInfo;
+    if (getLocalTime(&timeInfo)) {
+      char timeStr[16];
+      strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &timeInfo);
+      Serial.println(timeStr);
+    }
     for (int i = 0; i < sensorCount; i++) {
       readSensor(sensors[i]);
     }
@@ -106,7 +107,7 @@ void loop() {
     Serial.println("WiFi disconnected!");
   }
 
-  delay(1200000);  // every 20 min
+  delay(POLL_INTERVAL_MS);
 }
 
 void readSensor(const Sensor& sensor) {

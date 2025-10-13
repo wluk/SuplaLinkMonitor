@@ -27,6 +27,8 @@ Lightweight ESP32-S3 app that fetches and prints sensor data from Supla direct l
 In `SuplaLink_Monitor/config.h`:
 - **SERIAL_BAUD**: serial console speed (115200 by default)
 - **APP_NAME**: application name printed on boot
+ - **POLL_INTERVAL_MS**: interval between sensor reads (in milliseconds)
+ - **TZ_STRING**: POSIX timezone string for `configTzTime` (default handles CET/CEST with DST)
 
 In your private `SuplaLink_Monitor/secrets.h` (not committed):
 - **WIFI_SSID/WIFI_PASSWORD**: WiFi credentials
@@ -86,21 +88,20 @@ If `SENSORS_LIST` is not defined, the build uses an empty sensors list by defaul
 
 ### How it works (code overview)
 - Connects to WiFi using `WIFI_SSID`/`WIFI_PASSWORD` and prints a short status with `APP_NAME`.
-- Keeps time via NTP (`pool.ntp.org`) and prints formatted time each cycle.
+- Keeps time via built-in SNTP and timezone via `configTzTime` (CET/CEST with automatic DST), then prints formatted local time each cycle.
 - Iterates over `sensors[]` (from `SENSORS_LIST`) and for each sensor:
   - Builds a small JSON body `{ code, action:"read", type }` on the stack (ArduinoJson).
   - Sends an HTTP PATCH to the Supla direct URL and parses the JSON response stream.
   - Prints readings like: `[LOCATION] Temp: 23.45°C, Hum: 45.67%`.
-- Sleeps 20 minutes between cycles (adjust `delay(1200000)` if needed).
+- Sleeps between cycles based on `POLL_INTERVAL_MS` (default ~20 minutes).
 
 Key types:
 - `SensorType` enum: `TEMPERATURE = 1`, `AIR = 2`
 - `Sensor` struct: `url`, `code`, `location`, `type`
 
 ### Dependencies
-- ESP32 core (includes `WiFi`, `HTTPClient`)
+- ESP32 core (includes `WiFi`, `HTTPClient`, SNTP/time.h)
 - ArduinoJson (via Library Manager)
-- NTPClient (via Library Manager)
 - Optional (not used yet): `Adafruit_GFX`, `Adafruit_SSD1306`
 
 ### Usage
