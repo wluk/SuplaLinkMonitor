@@ -1,0 +1,31 @@
+name: CI Build (Arduino CLI)
+
+on:
+    push:
+    pull_request:
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Arduino CLI
+              uses: arduino/setup-arduino-cli@v1
+
+            - name: Configure Arduino CLI index
+              run: |
+                  arduino-cli core update-index --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+
+            - name: Install ESP32 core
+              run: |
+                  arduino-cli core install esp32:esp32 --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+
+            - name: Install libraries
+              run: |
+                  arduino-cli lib install "ArduinoJson" "NTPClient" "Adafruit GFX Library" "Adafruit SSD1306"
+
+            - name: Compile SuplaLink_Monitor
+              run: |
+                  arduino-cli compile --fqbn esp32:esp32:esp32s3 SuplaLink_Monitor
