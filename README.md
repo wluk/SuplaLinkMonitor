@@ -2,6 +2,8 @@
 
 Lightweight ESP32-S3 app that fetches and prints sensor data from Supla direct links to the serial console.
 
+![Serial output preview](SuplaLink_Monitor/docs/images/example.png)
+
 ### Requirements
 - **Arduino IDE 2.x**
 - **ESP32 boards package for Arduino** by Espressif
