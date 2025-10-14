@@ -1,4 +1,4 @@
-## SuplaLink Monitor (ESP32-S3, Arduino IDE) ![Version](https://img.shields.io/badge/version-0.1.0-blue)
+## SuplaLink Monitor (ESP32-S3, Arduino IDE) ![Version](https://img.shields.io/badge/version-0.1.0-blue)![example workflow](https://github.com/github/docs/actions/workflows/ci.yml/badge.svg)
 
 Lightweight ESP32-S3 app that fetches and prints sensor data from Supla direct links to the serial console.
 
