@@ -1,30 +1,29 @@
 #include <Arduino.h>
-#include "config.h"
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <time.h>
-
-#if defined(__has_include)
-  #if __has_include("secrets.h")
-    #include "secrets.h"
-  #endif
-#endif
-
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
-#define OLED_ADDR 0x3C
-
-// NTP handled by ESP32 SNTP via configTzTime
-
-bool hasDisplay = false;
+#include "config.h"
 
 enum SensorType {
   TEMPERATURE = 1,
   AIR = 2
 };
+
+struct Sensor {
+  const char* url;
+  const char* code;
+  const char* location;
+  SensorType type;
+};
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_ADDR 0x3C
+
+bool hasDisplay = false;
 
 static const char* sensorTypeToString(SensorType type) {
   switch (type) {
@@ -34,31 +33,35 @@ static const char* sensorTypeToString(SensorType type) {
   }
 }
 
-struct Sensor {
-  const char* url;
-  const char* code;
-  const char* location;
-  SensorType type;
-};
+#if defined(__has_include)
+#if __has_include("secrets.h")
+#include "secrets.h"
+#endif
+#endif
 
-#ifndef SENSORS_DEFINED
-  // Allow secrets.h to provide sensors via SENSORS_LIST macro
-  #ifdef SENSORS_LIST
-    #define SENSORS_DEFINED 1
-    const Sensor sensors[] = SENSORS_LIST;
-    const int sensorCount = sizeof(sensors) / sizeof(sensors[0]);
-  #else
-    // Default empty sensors list if none provided
-    const Sensor sensors[] = {};
-    const int sensorCount = 0;
-  #endif
+// Allow secrets.h to provide sensors via SENSORS_LIST macro
+#ifdef SENSORS_LIST
+#define SENSORS_DEFINED 1
+const Sensor sensors[] = SENSORS_LIST;
+const int sensorCount = sizeof(sensors) / sizeof(sensors[0]);
+#else
+// Default empty sensors list if none provided
+const Sensor sensors[] = {};
+const int sensorCount = 0;
 #endif
 
 void setup() {
   Serial.begin(SERIAL_BAUD);
   Serial.println();
-  Serial.print(F("=== ")); Serial.print(APP_NAME); Serial.print(F(" v")); Serial.print(APP_VERSION);
-  Serial.print(F(" (")); Serial.print(APP_BUILD_DATE); Serial.print(F(" ")); Serial.print(APP_BUILD_TIME); Serial.println(F(") ==="));
+  Serial.print(F("=== "));
+  Serial.print(APP_NAME);
+  Serial.print(F(" v"));
+  Serial.print(APP_VERSION);
+  Serial.print(F(" ("));
+  Serial.print(APP_BUILD_DATE);
+  Serial.print(F(" "));
+  Serial.print(APP_BUILD_TIME);
+  Serial.println(F(") ==="));
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   Serial.print(F("Connecting to WiFi SSID: "));

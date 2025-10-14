@@ -8,15 +8,6 @@
 #define SERIAL_BAUD 115200
 #endif
 
-// WiFi credentials
-#ifndef WIFI_SSID
-#define WIFI_SSID "YOUR_WIFI_SSID"
-#endif
-#ifndef WIFI_PASSWORD
-#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
-#endif
-
-
 // Application name (used only for logs)
 #ifndef APP_NAME
 #define APP_NAME "SuplaLink Monitor"
