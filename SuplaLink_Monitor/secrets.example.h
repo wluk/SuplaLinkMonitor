@@ -3,13 +3,12 @@
 
 #pragma once
 
-#ifndef WIFI_SSID
-#define WIFI_SSID "YourWiFiSSID"
-#endif
+// Undefine config.h values to override them
+#undef WIFI_SSID
+#undef WIFI_PASSWORD
 
-#ifndef WIFI_PASSWORD
+#define WIFI_SSID "YourWiFiSSID"
 #define WIFI_PASSWORD "YourWiFiPassword"
-#endif
 
 // Optionally define your private sensors here. The main sketch looks for SENSORS_LIST.
 // Example:

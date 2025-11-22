@@ -26,13 +26,13 @@ struct Sensor {
 
 // SPI pins for ST7789 (adjust these for your specific ESP32-S3 board)
 #ifndef TFT_CS
-#define TFT_CS    5
+#define TFT_CS 5
 #endif
 #ifndef TFT_RST
-#define TFT_RST   16
+#define TFT_RST 16
 #endif
 #ifndef TFT_DC
-#define TFT_DC    17
+#define TFT_DC 17
 #endif
 
 Adafruit_ST7789 display = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
@@ -100,7 +100,7 @@ void setup() {
   if (hasDisplay) {
     Serial.println(F("Initializing ST7789 display..."));
     display.init(SCREEN_WIDTH, SCREEN_HEIGHT);
-    display.setRotation(2); // Adjust rotation: 0, 1, 2, or 3
+    display.setRotation(2);  // Adjust rotation: 0, 1, 2, or 3
     display.fillScreen(ST77XX_BLACK);
     display.setTextSize(2);
     display.setTextColor(ST77XX_WHITE);
@@ -128,6 +128,9 @@ void loop() {
     }
     for (int i = 0; i < sensorCount; i++) {
       readSensor(sensors[i]);
+      if (i < sensorCount - 1) {  // Don't delay after last sensor
+        delay(SENSOR_DISPLAY_DELAY_MS);
+      }
     }
   } else {
     Serial.println("WiFi disconnected!");

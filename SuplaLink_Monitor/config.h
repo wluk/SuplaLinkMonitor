@@ -36,7 +36,12 @@
 
 // Polling interval for fetching data (milliseconds)
 #ifndef POLL_INTERVAL_MS
-#define POLL_INTERVAL_MS 1200000 // 20 minutes
+#define POLL_INTERVAL_MS 180000 // 3 minutes
+#endif
+
+// Delay between reading individual sensors (milliseconds)
+#ifndef SENSOR_DISPLAY_DELAY_MS
+#define SENSOR_DISPLAY_DELAY_MS 60000 // 60 seconds
 #endif
 
 // Timezone for configTzTime (POSIX TZ format). Default: CET with DST (CEST).
