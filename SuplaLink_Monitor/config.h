@@ -43,3 +43,10 @@
 #ifndef TZ_STRING
 #define TZ_STRING "CET-1CEST,M3.5.0,M10.5.0/3"
 #endif
+
+// ST7789 Display configuration
+// Uncomment and adjust these pins for your specific ESP32-S3 board
+// #define TFT_CS    5   // Chip Select pin
+// #define TFT_RST   16  // Reset pin
+// #define TFT_DC    17  // Data/Command pin
+// Default SPI pins: MOSI=11, MISO=13, SCK=12 (varies by ESP32-S3 board)
