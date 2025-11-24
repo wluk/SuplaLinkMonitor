@@ -38,6 +38,14 @@ struct Sensor {
 Adafruit_ST7789 display = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 bool hasDisplay = true;
 
+// Timer for updating current time (bottom-left)
+unsigned long lastTimeUpdate = 0;
+const unsigned long TIME_UPDATE_INTERVAL = 60000; // 60 seconds
+
+// Timer for updating work counter (bottom-right)
+unsigned long lastWorkCounterUpdate = 0;
+const unsigned long WORK_COUNTER_UPDATE_INTERVAL = 300000; // 5 minutes
+
 static const char* sensorTypeToString(SensorType type) {
   switch (type) {
     case TEMPERATURE: return "TEMPERATURE";
@@ -118,7 +126,82 @@ void setup() {
   }
 }
 
+// Function to update current time (bottom-left)
+void updateCurrentTime() {
+  if (!hasDisplay) return;
+
+  struct tm timeInfo;
+  if (getLocalTime(&timeInfo)) {
+    // Clear only the time section (left side)
+    display.fillRect(0, 290, 120, 30, ST77XX_BLACK);
+
+    // Current time - bottom-left corner
+    char currentTimeStr[9];
+    strftime(currentTimeStr, sizeof(currentTimeStr), "%H:%M:%S", &timeInfo);
+    display.setTextSize(3);
+    display.setTextColor(ST77XX_YELLOW);
+    display.setCursor(10, 305);
+    display.println(currentTimeStr);
+  }
+}
+
+// Function to update work counter (bottom-right)
+void updateWorkCounter() {
+  if (!hasDisplay) return;
+
+  struct tm timeInfo;
+  if (getLocalTime(&timeInfo)) {
+    // Clear only the work counter section (right side)
+    display.fillRect(120, 290, 120, 30, ST77XX_BLACK);
+
+    // Work time counter - bottom-right corner (8h starting at 8:00)
+    int currentHour = timeInfo.tm_hour;
+    int currentMin = timeInfo.tm_min;
+
+    // Calculate time since 8:00 (minutes only)
+    int workStartHour = 8;
+    int minutesSince8AM = (currentHour - workStartHour) * 60 + currentMin;
+
+    // 8 hours = 480 minutes
+    int workDayMinutes = 8 * 60;  // 480
+    int remainingMinutes = workDayMinutes - minutesSince8AM;
+
+    // Handle case when before 8:00 or after 16:00
+    if (currentHour < workStartHour) {
+      remainingMinutes = workDayMinutes;  // Full 8h remaining
+    } else if (remainingMinutes < 0) {
+      remainingMinutes = 0;  // Workday finished
+    }
+
+    // Convert to HH:MM
+    int hoursLeft = remainingMinutes / 60;
+    int minutesLeft = remainingMinutes % 60;
+
+    char workTimeStr[6];
+    snprintf(workTimeStr, sizeof(workTimeStr), "%02d:%02d", hoursLeft, minutesLeft);
+
+    display.setTextSize(3);
+    display.setTextColor(ST77XX_MAGENTA);
+    display.setCursor(150, 305);  // Adjusted for text size 3
+    display.println(workTimeStr);
+  }
+}
+
 void loop() {
+  unsigned long currentMillis = millis();
+
+  // Check if it's time to update current time (every 60 seconds)
+  if (currentMillis - lastTimeUpdate >= TIME_UPDATE_INTERVAL) {
+    updateCurrentTime();
+    lastTimeUpdate = currentMillis;
+  }
+
+  // Check if it's time to update work counter (every 5 minutes)
+  if (currentMillis - lastWorkCounterUpdate >= WORK_COUNTER_UPDATE_INTERVAL) {
+    updateWorkCounter();
+    lastWorkCounterUpdate = currentMillis;
+  }
+
   if (WiFi.status() == WL_CONNECTED) {
     struct tm timeInfo;
     if (getLocalTime(&timeInfo)) {
@@ -170,35 +253,39 @@ void readSensor(const Sensor& sensor) {
       if (hasDisplay) {
         display.fillScreen(ST77XX_BLACK);
 
-        // Display location
-        display.setTextSize(4);
-        display.setTextColor(ST77XX_CYAN);
-        display.setCursor(10, 20);
-        display.println(sensor.location);
-
-        // Display temperature
-        display.setTextSize(3);
-        display.setTextColor(ST77XX_ORANGE);
-        display.setCursor(10, 70);
-        display.print(temp, 1);
-        display.println(" C");
-
-        // Display humidity
-        display.setTextSize(3);
-        display.setTextColor(ST77XX_GREEN);
-        display.setCursor(10, 130);
-        display.print(hum, 1);
-        display.println(" %");
-
-        // Display time
         struct tm timeInfo;
         if (getLocalTime(&timeInfo)) {
-          char timeStr[16];
-          strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &timeInfo);
-          display.setTextSize(1);
+          // Display location - left side, same line as timestamp
+          display.setTextSize(5);
+          display.setTextColor(ST77XX_CYAN);
+          display.setCursor(10, 10);
+          display.print(sensor.location);
+
+          // Sensor read timestamp - right side, same line (from right edge)
+          char readTimeStr[9];
+          strftime(readTimeStr, sizeof(readTimeStr), "%H:%M:%S", &timeInfo);
+          display.setTextSize(2);
           display.setTextColor(ST77XX_WHITE);
-          display.setCursor(10, 210);
-          display.println(timeStr);
+          display.setCursor(192, 15);  // From right edge (240 - 8*6 = 192)
+          display.println(readTimeStr);
+
+          // Display temperature
+          display.setTextSize(4);
+          display.setTextColor(ST77XX_ORANGE);
+          display.setCursor(10, 70);
+          display.print(temp, 1);
+          display.println(" C");
+
+          // Display humidity
+          display.setTextSize(4);
+          display.setTextColor(ST77XX_GREEN);
+          display.setCursor(10, 130);
+          display.print(hum, 1);
+          display.println(" %");
+
+          // Update both bottom sections immediately after sensor read
+          updateCurrentTime();
+          updateWorkCounter();
         }
       }
     } else {
