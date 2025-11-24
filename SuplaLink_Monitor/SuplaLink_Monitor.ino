@@ -140,7 +140,7 @@ void updateCurrentTime() {
     strftime(currentTimeStr, sizeof(currentTimeStr), "%H:%M", &timeInfo);
     display.setTextSize(3);
     display.setTextColor(ST77XX_YELLOW);
-    display.setCursor(10, 300);
+    display.setCursor(10, 290);
     display.println(currentTimeStr);
   }
 }
@@ -182,7 +182,7 @@ void updateWorkCounter() {
 
     display.setTextSize(3);
     display.setTextColor(ST77XX_MAGENTA);
-    display.setCursor(150, 300);  // Raised by 2 pixels
+    display.setCursor(150, 290);  // Raised by 2 pixels
     display.println(workTimeStr);
   }
 }
@@ -266,7 +266,7 @@ void readSensor(const Sensor& sensor) {
           strftime(readTimeStr, sizeof(readTimeStr), "%H:%M:%S", &timeInfo);
           display.setTextSize(2);
           display.setTextColor(ST77XX_WHITE);
-          display.setCursor(144, 15);  // From right edge: 8 chars * 6px * size_2 = 96px, 240-96=144
+          display.setCursor(144, 45);  // From right edge: 8 chars * 6px * size_2 = 96px, 240-96=144
           display.println(readTimeStr);
 
           // Display temperature
