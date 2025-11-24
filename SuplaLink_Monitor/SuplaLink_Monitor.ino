@@ -133,14 +133,14 @@ void updateCurrentTime() {
   struct tm timeInfo;
   if (getLocalTime(&timeInfo)) {
     // Clear only the time section (left side)
-    display.fillRect(0, 290, 120, 30, ST77XX_BLACK);
+    display.fillRect(0, 288, 120, 30, ST77XX_BLACK);
 
-    // Current time - bottom-left corner
-    char currentTimeStr[9];
-    strftime(currentTimeStr, sizeof(currentTimeStr), "%H:%M:%S", &timeInfo);
+    // Current time - bottom-left corner (HH:MM without seconds)
+    char currentTimeStr[6];
+    strftime(currentTimeStr, sizeof(currentTimeStr), "%H:%M", &timeInfo);
     display.setTextSize(3);
     display.setTextColor(ST77XX_YELLOW);
-    display.setCursor(10, 305);
+    display.setCursor(10, 300);
     display.println(currentTimeStr);
   }
 }
@@ -152,7 +152,7 @@ void updateWorkCounter() {
   struct tm timeInfo;
   if (getLocalTime(&timeInfo)) {
     // Clear only the work counter section (right side)
-    display.fillRect(120, 290, 120, 30, ST77XX_BLACK);
+    display.fillRect(120, 288, 120, 30, ST77XX_BLACK);
 
     // Work time counter - bottom-right corner (8h starting at 8:00)
     int currentHour = timeInfo.tm_hour;
@@ -182,7 +182,7 @@ void updateWorkCounter() {
 
     display.setTextSize(3);
     display.setTextColor(ST77XX_MAGENTA);
-    display.setCursor(150, 305);  // Adjusted for text size 3
+    display.setCursor(150, 300);  // Raised by 2 pixels
     display.println(workTimeStr);
   }
 }
@@ -256,7 +256,7 @@ void readSensor(const Sensor& sensor) {
         struct tm timeInfo;
         if (getLocalTime(&timeInfo)) {
           // Display location - left side, same line as timestamp
-          display.setTextSize(5);
+          display.setTextSize(4);
           display.setTextColor(ST77XX_CYAN);
           display.setCursor(10, 10);
           display.print(sensor.location);
@@ -266,7 +266,7 @@ void readSensor(const Sensor& sensor) {
           strftime(readTimeStr, sizeof(readTimeStr), "%H:%M:%S", &timeInfo);
           display.setTextSize(2);
           display.setTextColor(ST77XX_WHITE);
-          display.setCursor(192, 15);  // From right edge (240 - 8*6 = 192)
+          display.setCursor(144, 15);  // From right edge: 8 chars * 6px * size_2 = 96px, 240-96=144
           display.println(readTimeStr);
 
           // Display temperature
