@@ -171,7 +171,7 @@ void readSensor(const Sensor& sensor) {
         display.fillScreen(ST77XX_BLACK);
 
         // Display location
-        display.setTextSize(2);
+        display.setTextSize(4);
         display.setTextColor(ST77XX_CYAN);
         display.setCursor(10, 20);
         display.println(sensor.location);
